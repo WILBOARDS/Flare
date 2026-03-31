@@ -84,10 +84,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [exchangeSupabaseToken, supabase.auth]);
 
   const signInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
+    if (error) {
+      if (error.message?.toLowerCase().includes('provider') || error.message?.toLowerCase().includes('not enabled')) {
+        throw new Error('Google sign-in is not configured yet. Please use email/password for now.');
+      }
+      throw error;
+    }
   };
 
   const signInWithEmail = async (email: string, password: string) => {

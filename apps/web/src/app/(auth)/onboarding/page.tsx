@@ -33,48 +33,75 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center px-6">
+    <div className="relative min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center px-6 overflow-hidden">
+      {/* Ambient gradient orbs */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-[400px] h-[400px] rounded-full bg-brand/15 blur-[100px]" />
+        <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-orange-900/15 blur-[100px]" />
+      </div>
+
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 28 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm"
+        transition={{ duration: 0.45, ease: 'easeOut' }}
+        className="relative z-10 w-full max-w-sm"
       >
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-black text-white">Set up your profile</h1>
-          <p className="text-neutral-400 mt-2 text-sm">Choose a username to get started</p>
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <span
+            className="text-3xl font-black tracking-tight"
+            style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FFB347 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+          >
+            FLAIR
+          </span>
+          <h1 className="text-2xl font-black text-white mt-3">Set up your profile</h1>
+          <p className="text-neutral-500 mt-1.5 text-sm">Pick a username to get started on FLAIR</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm text-neutral-400 mb-1.5">Username</label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">@</span>
+        <div className="bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-2xl p-6 shadow-2xl">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">
+                Username
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 font-medium">@</span>
+                <input
+                  className="input pl-8"
+                  type="text"
+                  placeholder="yourname"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                  required
+                  maxLength={30}
+                  autoComplete="off"
+                  autoFocus
+                />
+              </div>
+              <p className="text-xs text-neutral-600 mt-1.5">3-30 characters, letters, numbers, underscores</p>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">
+                Display Name
+              </label>
               <input
-                className="input pl-8"
+                className="input"
                 type="text"
-                placeholder="yourname"
-                value={username}
-                onChange={(e) => setUsername(e.target.value.toLowerCase())}
-                required
+                placeholder="Your Name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                maxLength={50}
               />
             </div>
-          </div>
-          <div>
-            <label className="block text-sm text-neutral-400 mb-1.5">Display Name</label>
-            <input
-              className="input"
-              type="text"
-              placeholder="Your Name"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-            />
-          </div>
-          <button type="submit" className="btn-primary w-full mt-2" disabled={loading}>
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
-            ) : "Let's go →"}
-          </button>
-        </form>
+            <button type="submit" className="btn-primary w-full mt-2" disabled={loading}>
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
+              ) : (
+                "Let's go →"
+              )}
+            </button>
+          </form>
+        </div>
       </motion.div>
     </div>
   );
