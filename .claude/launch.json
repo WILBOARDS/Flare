@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Web (Next.js)",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev:web"],
+      "port": 3000
+    },
+    {
+      "name": "API (NestJS)",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev:api"],
+      "port": 3001
+    },
+    {
+      "name": "Database (Docker)",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["db:up"],
+      "port": 5432
+    },
+    {
+      "name": "Hardhat Node (Local Blockchain)",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@flare/contracts", "exec", "hardhat", "node"],
+      "port": 8545
+    }
+  ]
+}
