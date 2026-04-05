@@ -16,6 +16,7 @@ import { PostEntity } from './entities/post.entity';
 import { FollowEntity } from './entities/follow.entity';
 import { LikeEntity } from './entities/like.entity';
 import { CreatorTokenEntity } from './entities/creator-token.entity';
+import { CommentEntity } from './entities/comment.entity';
 
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -25,6 +26,7 @@ import { FollowsModule } from './follows/follows.module';
 import { LikesModule } from './likes/likes.module';
 import { UploadModule } from './upload/upload.module';
 import { TokensModule } from './tokens/tokens.module';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
@@ -41,7 +43,7 @@ import { TokensModule } from './tokens/tokens.module';
         type: 'postgres' as const,
         url: config.get<string>('database.url'),
         ssl: { rejectUnauthorized: false },
-        entities: [UserEntity, PostEntity, FollowEntity, LikeEntity, CreatorTokenEntity],
+        entities: [UserEntity, PostEntity, FollowEntity, LikeEntity, CreatorTokenEntity, CommentEntity],
         migrations: [join(__dirname, 'database', 'migrations', '*{.ts,.js}')],
         migrationsRun: true,
         synchronize: false,
@@ -65,6 +67,7 @@ import { TokensModule } from './tokens/tokens.module';
     LikesModule,
     UploadModule,
     TokensModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [

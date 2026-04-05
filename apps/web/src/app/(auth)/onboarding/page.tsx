@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/auth-provider';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronRight, ChevronLeft, Loader2, User, Cake, Wallet } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import toast from 'react-hot-toast';
+
+const LS_KEY = 'flair_onboarding_draft';
 
 export default function OnboardingPage() {
   const { user, refreshUser } = useAuth();

@@ -12,7 +12,7 @@ export class UploadService {
     });
   }
 
-  generateSignature(): {
+  generateSignature(folder = 'flare/posts'): {
     timestamp: number;
     signature: string;
     cloudName: string;
@@ -20,7 +20,6 @@ export class UploadService {
     folder: string;
   } {
     const timestamp = Math.round(Date.now() / 1000);
-    const folder = 'flare/posts';
     const signature = cloudinary.utils.api_sign_request(
       { timestamp, folder },
       this.configService.get<string>('cloudinary.apiSecret')!,

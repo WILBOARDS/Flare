@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowLeft, LogOut, Camera, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 import apiClient from '@/lib/api-client';
+import { CLOUDINARY_UPLOAD_URL } from '@/lib/constants';
 import { useAuth } from '@/providers/auth-provider';
 
 export default function SettingsPage() {
@@ -15,10 +16,37 @@ export default function SettingsPage() {
 
   const [username, setUsername] = useState(user?.username ?? '');
   const [displayName, setDisplayName] = useState(user?.displayName ?? '');
-  const [bio, setBio] = useState('');
+  const [bio, setBio] = useState(user?.bio ?? '');
   const [walletAddress, setWalletAddress] = useState(user?.walletAddress ?? '');
   const [saving, setSaving] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5_000_000) { toast.error('Image must be under 5MB'); return; }
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const uploadAvatar = async (): Promise<string | null> => {
+    if (!avatarFile) return null;
+    const { data: sigData } = await apiClient.post('/upload/avatar-signature');
+    const { timestamp, signature, cloudName, apiKey, folder } = sigData;
+    const formData = new FormData();
+    formData.append('file', avatarFile);
+    formData.append('timestamp', String(timestamp));
+    formData.append('signature', signature);
+    formData.append('api_key', apiKey);
+    formData.append('folder', folder);
+    const res = await fetch(CLOUDINARY_UPLOAD_URL(cloudName), { method: 'POST', body: formData });
+    const data = await res.json();
+    return data.secure_url as string;
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,11 +56,19 @@ export default function SettingsPage() {
     }
     setSaving(true);
     try {
+      let avatarUrl: string | undefined;
+      if (avatarFile) {
+        setUploadingAvatar(true);
+        const url = await uploadAvatar();
+        setUploadingAvatar(false);
+        if (url) avatarUrl = url;
+      }
       await apiClient.patch('/users/me', {
         username: username || undefined,
         displayName: displayName || undefined,
         bio: bio || undefined,
         walletAddress: walletAddress || undefined,
+        avatarUrl,
       });
       await refreshUser();
       toast.success('Profile updated!');
@@ -40,6 +76,7 @@ export default function SettingsPage() {
         router.replace(`/profile/${username}`);
       }
     } catch (err: any) {
+      setUploadingAvatar(false);
       toast.error(err?.response?.data?.message ?? 'Failed to save');
     } finally {
       setSaving(false);
@@ -71,7 +108,9 @@ export default function SettingsPage() {
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-gradient-to-br from-brand to-orange-400 flex items-center justify-center">
-              {user?.avatarUrl ? (
+              {avatarPreview ? (
+                <Image src={avatarPreview} alt="Avatar preview" fill className="object-cover" />
+              ) : user?.avatarUrl ? (
                 <Image src={user.avatarUrl} alt="Avatar" fill className="object-cover" />
               ) : (
                 <span className="text-3xl font-bold text-white">
@@ -79,11 +118,29 @@ export default function SettingsPage() {
                 </span>
               )}
             </div>
-            <div className="absolute bottom-0 right-0 w-7 h-7 bg-brand rounded-full flex items-center justify-center border-2 border-[#0A0A0A]">
-              <Camera className="w-3.5 h-3.5 text-white" />
-            </div>
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              className="absolute bottom-0 right-0 w-7 h-7 bg-brand rounded-full flex items-center justify-center border-2 border-[#0A0A0A] hover:bg-orange-500 transition-colors"
+              aria-label="Change avatar"
+            >
+              {uploadingAvatar ? (
+                <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
+              ) : (
+                <Camera className="w-3.5 h-3.5 text-white" />
+              )}
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarSelect}
+            />
           </div>
-          <p className="text-xs text-neutral-500">Avatar synced from your login provider</p>
+          <p className="text-xs text-neutral-500">
+            {avatarPreview ? 'New photo selected — save to apply' : 'Tap the camera to change your photo'}
+          </p>
         </div>
 
         {/* Edit form */}

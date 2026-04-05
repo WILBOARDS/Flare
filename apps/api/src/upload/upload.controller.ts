@@ -9,6 +9,11 @@ export class UploadController {
 
   @Post('signature')
   getSignature() {
-    return this.uploadService.generateSignature();
+    return this.uploadService.generateSignature('flare/posts');
+  }
+
+  @Post('avatar-signature')
+  getAvatarSignature() {
+    return this.uploadService.generateSignature('flare/avatars');
   }
 }

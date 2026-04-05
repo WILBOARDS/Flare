@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/auth-provider';
 import { BottomNav } from '@/components/layout/bottom-nav';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -25,7 +26,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] pb-20">
-      <main className="page-container pt-4">{children}</main>
+      <main className="page-container pt-4">
+        <ErrorBoundary>{children}</ErrorBoundary>
+      </main>
       <BottomNav />
     </div>
   );

@@ -8,8 +8,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api');
+  const config = app.get(ConfigService);
+  const allowedOrigins = (config.get<string>('CORS_ORIGIN') ?? 'http://localhost:3000')
+    .split(',')
+    .map((o) => o.trim());
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: allowedOrigins,
     credentials: true,
   });
   app.useGlobalPipes(
@@ -20,7 +24,6 @@ async function bootstrap() {
     }),
   );
 
-  const config = app.get(ConfigService);
   const port = config.get<number>('port') ?? 3001;
   await app.listen(port);
   console.log(`FLAIR API running on http://localhost:${port}/api`);

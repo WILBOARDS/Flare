@@ -7,6 +7,7 @@ export interface Post {
   content: string;
   imageUrl: string | null;
   likeCount: number;
+  commentCount: number;
   isLiked: boolean;
   createdAt: string;
   author: {

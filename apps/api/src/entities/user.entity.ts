@@ -43,6 +43,9 @@ export class UserEntity {
   @Column({ name: 'creator_token_address', type: 'varchar', nullable: true, length: 42 })
   creatorTokenAddress: string | null;
 
+  @Column({ name: 'date_of_birth', type: 'varchar', nullable: true, length: 10 })
+  dateOfBirth: string | null;
+
   @Column({ name: 'follower_count', type: 'int', default: 0 })
   followerCount: number;
 

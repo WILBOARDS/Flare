@@ -1,17 +1,20 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, MessageCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn, formatCount, timeAgo } from '@/lib/utils';
 import { useLike } from '@/hooks/use-like';
 import { useAuth } from '@/providers/auth-provider';
+import { CommentSheet } from './comment-sheet';
 import type { Post } from '@/hooks/use-feed';
 
 export function PostCard({ post }: { post: Post }) {
   const { user } = useAuth();
   const { mutate: toggleLike, isPending } = useLike();
+  const [showComments, setShowComments] = useState(false);
 
   const handleLike = () => {
     if (!user) return;
@@ -88,10 +91,23 @@ export function PostCard({ post }: { post: Post }) {
           />
           <span>{formatCount(post.likeCount)}</span>
         </button>
-        <button className="flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-300 transition-colors">
+        <button
+          onClick={() => setShowComments(true)}
+          className="flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
+          aria-label={`${post.commentCount ?? 0} comments`}
+        >
           <MessageCircle className="w-5 h-5" strokeWidth={1.5} />
+          {(post.commentCount ?? 0) > 0 && (
+            <span>{formatCount(post.commentCount)}</span>
+          )}
         </button>
       </div>
+
+      <AnimatePresence>
+        {showComments && (
+          <CommentSheet postId={post.id} onClose={() => setShowComments(false)} />
+        )}
+      </AnimatePresence>
     </motion.article>
   );
 }

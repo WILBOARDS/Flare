@@ -12,10 +12,12 @@ interface AuthUser {
   email: string | null;
   username: string | null;
   displayName: string | null;
+  bio: string | null;
   avatarUrl: string | null;
   followerCount: number;
   followingCount: number;
   walletAddress: string | null;
+  creatorTokenAddress: string | null;
   createdAt: string;
 }
 

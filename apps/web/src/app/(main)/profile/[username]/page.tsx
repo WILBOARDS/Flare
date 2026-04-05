@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, UserPlus, UserMinus } from 'lucide-react';
+import { ArrowLeft, UserPlus, UserMinus, Coins, ExternalLink, Rocket } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useProfile, useFollow } from '@/hooks/use-profile';
 import { useUserFeed } from '@/hooks/use-feed';
@@ -163,7 +163,7 @@ export default function ProfilePage() {
         )}
 
         {/* Stats */}
-        <div className="flex gap-6 mb-6 pb-6 border-b border-neutral-800">
+        <div className="flex gap-6 mb-4 pb-4 border-b border-neutral-800">
           <div>
             <span className="font-bold">{formatCount(profile.followingCount)}</span>
             <span className="text-neutral-500 text-sm ml-1">Following</span>
@@ -173,6 +173,49 @@ export default function ProfilePage() {
             <span className="text-neutral-500 text-sm ml-1">Followers</span>
           </div>
         </div>
+
+        {/* Creator Token */}
+        {profile.creatorTokenAddress ? (
+          <div className="mb-4 p-4 rounded-xl bg-gradient-to-br from-brand/10 to-orange-900/10 border border-brand/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Coins className="w-4 h-4 text-brand" />
+                <span className="text-sm font-semibold text-brand">Creator Token</span>
+              </div>
+              <a
+                href={`https://amoy.polygonscan.com/token/${profile.creatorTokenAddress}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs text-neutral-400 hover:text-white transition-colors"
+                aria-label="View on PolygonScan"
+              >
+                View on PolygonScan
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+            <p className="mt-2 text-xs font-mono text-neutral-400 truncate">
+              {profile.creatorTokenAddress}
+            </p>
+          </div>
+        ) : isOwnProfile ? (
+          <div className="mb-4 p-4 rounded-xl border border-dashed border-neutral-700">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-neutral-800 flex items-center justify-center flex-shrink-0">
+                <Rocket className="w-4 h-4 text-neutral-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-neutral-300">Launch your Creator Token</p>
+                <p className="text-xs text-neutral-500 mt-0.5">Let fans invest in your content and earn together</p>
+              </div>
+              <button
+                onClick={() => router.push('/settings')}
+                className="text-xs font-semibold text-brand hover:text-orange-400 transition-colors flex-shrink-0"
+              >
+                Coming Soon
+              </button>
+            </div>
+          </div>
+        ) : null}
 
         {/* Posts */}
         {feedLoading ? (
