@@ -1,0 +1,23 @@
+{
+  "name": "@flare/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "hardhat compile",
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:flc": "hardhat run scripts/deploy-flc.ts --network hardhat",
+    "deploy:factory": "hardhat run scripts/deploy-factory.ts --network hardhat",
+    "deploy:flc:amoy": "hardhat run scripts/deploy-flc.ts --network amoy",
+    "deploy:factory:amoy": "hardhat run scripts/deploy-factory.ts --network amoy",
+    "clean": "hardhat clean"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.2"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.4",
+    "dotenv": "^16.4.5"
+  }
+}

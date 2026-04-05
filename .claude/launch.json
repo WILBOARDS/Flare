@@ -1,0 +1,21 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "API (NestJS)",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@flare/api", "run", "dev"],
+      "port": 3001,
+      "autoPort": false,
+      "cwd": "D:/Flare"
+    },
+    {
+      "name": "Web (Next.js)",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@flare/web", "run", "dev"],
+      "port": 3000,
+      "autoPort": false,
+      "cwd": "D:/Flare"
+    }
+  ]
+}
