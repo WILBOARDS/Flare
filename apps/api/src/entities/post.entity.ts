@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { LikeEntity } from './like.entity';
+import { RepostEntity } from './repost.entity';
 
 @Entity('posts')
 export class PostEntity {
@@ -33,6 +34,9 @@ export class PostEntity {
   @Column({ name: 'like_count', type: 'int', default: 0 })
   likeCount: number;
 
+  @Column({ name: 'repost_count', type: 'int', default: 0 })
+  repostCount: number;
+
   @Index()
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
@@ -46,4 +50,7 @@ export class PostEntity {
 
   @OneToMany(() => LikeEntity, (l) => l.post)
   likes: LikeEntity[];
+
+  @OneToMany(() => RepostEntity, (r) => r.post)
+  reposts: RepostEntity[];
 }

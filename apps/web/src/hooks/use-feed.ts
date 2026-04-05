@@ -7,7 +7,10 @@ export interface Post {
   content: string;
   imageUrl: string | null;
   likeCount: number;
+  repostCount?: number;
   isLiked: boolean;
+  isBookmarked?: boolean;
+  isReposted?: boolean;
   createdAt: string;
   author: {
     id: string;
@@ -17,7 +20,7 @@ export interface Post {
   };
 }
 
-interface FeedPage {
+export interface FeedPage {
   posts: Post[];
   nextCursor?: string;
   hasMore: boolean;
@@ -29,6 +32,19 @@ export function useFeed() {
     queryFn: async ({ pageParam }) => {
       const params = pageParam ? { cursor: pageParam } : {};
       const res = await apiClient.get('/feed', { params });
+      return res.data as FeedPage;
+    },
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
+  });
+}
+
+export function useTrendingFeed() {
+  return useInfiniteQuery<FeedPage>({
+    queryKey: ['feed', 'trending'],
+    queryFn: async ({ pageParam }) => {
+      const params = pageParam ? { cursor: pageParam } : {};
+      const res = await apiClient.get('/feed/trending', { params });
       return res.data as FeedPage;
     },
     initialPageParam: undefined,

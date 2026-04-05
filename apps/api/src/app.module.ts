@@ -15,7 +15,10 @@ import { UserEntity } from './entities/user.entity';
 import { PostEntity } from './entities/post.entity';
 import { FollowEntity } from './entities/follow.entity';
 import { LikeEntity } from './entities/like.entity';
+import { BookmarkEntity } from './entities/bookmark.entity';
 import { CreatorTokenEntity } from './entities/creator-token.entity';
+import { NotificationEntity } from './entities/notification.entity';
+import { RepostEntity } from './entities/repost.entity';
 
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -23,8 +26,11 @@ import { PostsModule } from './posts/posts.module';
 import { FeedModule } from './feed/feed.module';
 import { FollowsModule } from './follows/follows.module';
 import { LikesModule } from './likes/likes.module';
+import { BookmarksModule } from './bookmarks/bookmarks.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { UploadModule } from './upload/upload.module';
 import { TokensModule } from './tokens/tokens.module';
+import { RepostsModule } from './reposts/reposts.module';
 
 @Module({
   imports: [
@@ -41,7 +47,7 @@ import { TokensModule } from './tokens/tokens.module';
         type: 'postgres' as const,
         url: config.get<string>('database.url'),
         ssl: { rejectUnauthorized: false },
-        entities: [UserEntity, PostEntity, FollowEntity, LikeEntity, CreatorTokenEntity],
+        entities: [UserEntity, PostEntity, FollowEntity, LikeEntity, BookmarkEntity, CreatorTokenEntity, NotificationEntity, RepostEntity],
         migrations: [join(__dirname, 'database', 'migrations', '*{.ts,.js}')],
         migrationsRun: true,
         synchronize: false,
@@ -63,8 +69,11 @@ import { TokensModule } from './tokens/tokens.module';
     FeedModule,
     FollowsModule,
     LikesModule,
+    BookmarksModule,
+    NotificationsModule,
     UploadModule,
     TokensModule,
+    RepostsModule,
   ],
   controllers: [AppController],
   providers: [

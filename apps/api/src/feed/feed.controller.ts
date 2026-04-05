@@ -22,6 +22,20 @@ export class FeedController {
     );
   }
 
+  @Get('trending')
+  @UseGuards(OptionalAuthGuard)
+  getTrendingFeed(
+    @CurrentUser() user: UserEntity | undefined,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.feedService.getTrendingFeed(
+      user?.id ?? null,
+      cursor,
+      limit ? parseInt(limit, 10) : 20,
+    );
+  }
+
   @Get('user/:username')
   @UseGuards(OptionalAuthGuard)
   getUserFeed(

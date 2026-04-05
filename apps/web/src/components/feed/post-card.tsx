@@ -2,20 +2,35 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, MessageCircle } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Repeat2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn, formatCount, timeAgo } from '@/lib/utils';
 import { useLike } from '@/hooks/use-like';
+import { useBookmark } from '@/hooks/use-bookmark';
+import { useRepost } from '@/hooks/use-repost';
 import { useAuth } from '@/providers/auth-provider';
+import { PostActionsMenu } from '@/components/feed/post-actions-menu';
 import type { Post } from '@/hooks/use-feed';
 
 export function PostCard({ post }: { post: Post }) {
   const { user } = useAuth();
-  const { mutate: toggleLike, isPending } = useLike();
+  const { mutate: toggleLike, isPending: isLikePending } = useLike();
+  const { mutate: toggleBookmark, isPending: isBookmarkPending } = useBookmark();
+  const { mutate: toggleRepost, isPending: isRepostPending } = useRepost();
 
   const handleLike = () => {
     if (!user) return;
     toggleLike({ postId: post.id, liked: post.isLiked });
+  };
+
+  const handleBookmark = () => {
+    if (!user) return;
+    toggleBookmark({ postId: post.id, bookmarked: post.isBookmarked ?? false });
+  };
+
+  const handleRepost = () => {
+    if (!user) return;
+    toggleRepost({ postId: post.id, reposted: post.isReposted ?? false });
   };
 
   return (
@@ -51,31 +66,34 @@ export function PostCard({ post }: { post: Post }) {
           </Link>
           <p className="text-neutral-500 text-xs">@{post.author.username} · {timeAgo(post.createdAt)}</p>
         </div>
+        {user?.id === post.authorId && <PostActionsMenu post={post} />}
       </div>
 
-      {/* Content */}
-      <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words mb-3">
-        {post.content}
-      </p>
+      {/* Content — clickable body navigates to permalink */}
+      <Link href={`/post/${post.id}`} className="block group">
+        <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words mb-3 group-hover:opacity-90 transition-opacity">
+          {post.content}
+        </p>
 
-      {/* Image */}
-      {post.imageUrl && (
-        <div className="rounded-xl overflow-hidden mb-3 bg-neutral-800">
-          <Image
-            src={post.imageUrl}
-            alt="Post image"
-            width={600}
-            height={400}
-            className="w-full object-cover max-h-80"
-          />
-        </div>
-      )}
+        {/* Image */}
+        {post.imageUrl && (
+          <div className="rounded-xl overflow-hidden mb-3 bg-neutral-800">
+            <Image
+              src={post.imageUrl}
+              alt="Post image"
+              width={600}
+              height={400}
+              className="w-full object-cover max-h-80"
+            />
+          </div>
+        )}
+      </Link>
 
       {/* Actions */}
       <div className="flex items-center gap-5 pt-1">
         <button
           onClick={handleLike}
-          disabled={isPending || !user}
+          disabled={isLikePending || !user}
           className={cn(
             'flex items-center gap-1.5 text-sm transition-colors',
             post.isLiked ? 'text-red-400' : 'text-neutral-500 hover:text-red-400',
@@ -90,6 +108,33 @@ export function PostCard({ post }: { post: Post }) {
         </button>
         <button className="flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-300 transition-colors">
           <MessageCircle className="w-5 h-5" strokeWidth={1.5} />
+        </button>
+        <button
+          onClick={handleRepost}
+          disabled={isRepostPending || !user}
+          className={cn(
+            'flex items-center gap-1.5 text-sm transition-colors',
+            post.isReposted ? 'text-green-400' : 'text-neutral-500 hover:text-green-400',
+          )}
+        >
+          <Repeat2 className="w-5 h-5" strokeWidth={1.5} />
+          {post.repostCount !== undefined && post.repostCount > 0 && (
+            <span>{formatCount(post.repostCount)}</span>
+          )}
+        </button>
+        <button
+          onClick={handleBookmark}
+          disabled={isBookmarkPending || !user}
+          className={cn(
+            'flex items-center gap-1.5 text-sm transition-colors ml-auto',
+            post.isBookmarked ? 'text-brand' : 'text-neutral-500 hover:text-brand',
+          )}
+        >
+          <Bookmark
+            className="w-5 h-5"
+            fill={post.isBookmarked ? 'currentColor' : 'none'}
+            strokeWidth={1.5}
+          />
         </button>
       </div>
     </motion.article>
