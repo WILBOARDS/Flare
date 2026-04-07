@@ -3,19 +3,18 @@
   "configurations": [
     {
       "name": "API (NestJS)",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@flare/api", "run", "dev"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["node_modules/.bin/nest", "start", "--watch"],
       "port": 3001,
-      "autoPort": false,
-      "cwd": "D:/Flare"
+      "cwd": "apps/api"
     },
     {
       "name": "Web (Next.js)",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@flare/web", "run", "dev"],
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "dev"],
       "port": 3000,
-      "autoPort": false,
-      "cwd": "D:/Flare"
+      "autoPort": true,
+      "cwd": "D:\\Flare\\.claude\\worktrees\\quizzical-archimedes\\apps\\web"
     }
   ]
 }
