@@ -1,0 +1,20 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "API (NestJS)",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["node_modules/.bin/nest", "start", "--watch"],
+      "port": 3001,
+      "cwd": "apps/api"
+    },
+    {
+      "name": "Web (Next.js)",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "dev"],
+      "port": 3000,
+      "autoPort": true,
+      "cwd": "D:\\Flare\\.claude\\worktrees\\quizzical-archimedes\\apps\\web"
+    }
+  ]
+}
