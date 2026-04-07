@@ -48,7 +48,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(FLARE_TOKEN_KEY, token);
       setUser(platformUser);
       return platformUser;
-    } catch {
+    } catch (err) {
+      console.error('[exchangeSupabaseToken] Failed to exchange token with platform API:', err);
       return null;
     }
   }, []);
@@ -92,10 +93,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     if (error) {
-      if (error.message?.toLowerCase().includes('provider') || error.message?.toLowerCase().includes('not enabled')) {
-        throw new Error('Google sign-in is not configured yet. Please use email/password for now.');
-      }
-      throw error;
+      const isProviderError =
+        error.status === 400 ||
+        error.code === 'validation_failed' ||
+        /unsupported provider|not enabled|provider/i.test(error.message ?? '');
+      throw new Error(
+        isProviderError
+          ? 'Google sign-in is not available right now. Please sign in with email instead.'
+          : 'Could not start Google sign-in. Please try again.',
+      );
     }
   };
 
@@ -109,14 +115,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUpWithEmail = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
-    if (error) throw error;
+
+    if (error) {
+      if (error.status === 429 || /rate limit/i.test(error.message ?? '')) {
+        throw new Error(
+          'Too many sign-up attempts. Supabase allows 4 emails per hour on the free tier. Please wait a few minutes and try again.',
+        );
+      }
+      throw new Error(error.message ?? 'Sign-up failed. Please try again.');
+    }
+
+    // Supabase silently "succeeds" for already-confirmed accounts — data.user is null, no email sent.
+    if (!data.user) {
+      throw new Error(
+        'An account with this email already exists. Please sign in instead.',
+      );
+    }
   };
 
   const resendVerificationEmail = async (email: string) => {

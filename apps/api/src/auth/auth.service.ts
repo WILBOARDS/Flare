@@ -27,6 +27,11 @@ export class AuthService {
     }
 
     const supaUser = data.user;
+
+    if (!supaUser.email_confirmed_at) {
+      throw new UnauthorizedException('Email address not verified. Please check your inbox and click the verification link.');
+    }
+
     const user = await this.usersService.upsertFromSupabase({
       supabaseId: supaUser.id,
       email: supaUser.email,

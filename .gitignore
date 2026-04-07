@@ -44,3 +44,4 @@ coverage/
 
 # Docker volumes
 pgdata/
+.vercel
