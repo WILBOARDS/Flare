@@ -7,6 +7,9 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get('code');
   const origin = requestUrl.origin;
 
+  // Default destination — main layout will redirect to /onboarding if username not yet set
+  let redirectTo = `${origin}/feed`;
+
   if (code) {
     const cookieStore = cookies();
     const supabase = createServerClient(
@@ -23,8 +26,11 @@ export async function GET(request: NextRequest) {
         },
       },
     );
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      redirectTo = `${origin}/login?error=confirmation_failed`;
+    }
   }
 
-  return NextResponse.redirect(`${origin}/feed`);
+  return NextResponse.redirect(redirectTo);
 }
