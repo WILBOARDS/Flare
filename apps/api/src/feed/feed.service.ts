@@ -5,7 +5,7 @@ import { PostEntity } from '../entities/post.entity';
 import { LikeEntity } from '../entities/like.entity';
 
 export interface FeedResponse {
-  posts: (PostEntity & { isLiked: boolean })[];
+  posts: (PostEntity & { isLiked: boolean; isBookmarked: boolean })[];
   nextCursor: string | undefined;
   hasMore: boolean;
 }
@@ -47,7 +47,7 @@ export class FeedService {
         : undefined;
 
     return {
-      posts: posts.map((p) => ({ ...p, isLiked: likedPostIds.has(p.id) })),
+      posts: posts.map((p) => ({ ...p, isLiked: likedPostIds.has(p.id), isBookmarked: false })),
       nextCursor,
       hasMore,
     };
@@ -83,7 +83,46 @@ export class FeedService {
         : undefined;
 
     return {
-      posts: posts.map((p) => ({ ...p, isLiked: likedPostIds.has(p.id) })),
+      posts: posts.map((p) => ({ ...p, isLiked: likedPostIds.has(p.id), isBookmarked: false })),
+      nextCursor,
+      hasMore,
+    };
+  }
+
+  async getUserLikedFeed(
+    targetUsername: string,
+    currentUserId: string | null,
+    cursor?: string,
+    limit = 20,
+  ): Promise<FeedResponse> {
+    const qb = this.likeRepo
+      .createQueryBuilder('like')
+      .innerJoinAndSelect('like.post', 'post')
+      .innerJoinAndSelect('post.author', 'author')
+      .innerJoin('like.user', 'liker')
+      .where('liker.username = :username', { username: targetUsername })
+      .orderBy('like.createdAt', 'DESC')
+      .take(limit + 1);
+
+    if (cursor) {
+      const decoded = Buffer.from(cursor, 'base64url').toString('utf-8');
+      qb.andWhere('like.createdAt < :cursor', { cursor: decoded });
+    }
+
+    const likes = await qb.getMany();
+    const hasMore = likes.length > limit;
+    if (hasMore) likes.pop();
+
+    const posts = likes.map((l) => l.post);
+    const likedPostIds = await this.getLikedPostIds(currentUserId, posts.map((p) => p.id));
+
+    const nextCursor =
+      hasMore && likes.length > 0
+        ? Buffer.from(likes[likes.length - 1].createdAt.toISOString()).toString('base64url')
+        : undefined;
+
+    return {
+      posts: posts.map((p) => ({ ...p, isLiked: likedPostIds.has(p.id), isBookmarked: false })),
       nextCursor,
       hasMore,
     };

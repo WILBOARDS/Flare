@@ -1,5 +1,6 @@
 import { Controller, Get, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { LeaderboardService } from './leaderboard.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SupabaseAuthGuard } from '../auth/guards/supabase-auth.guard';
 import { OptionalAuthGuard } from '../auth/guards/optional-auth.guard';
@@ -8,7 +9,10 @@ import { UserEntity } from '../entities/user.entity';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly leaderboardService: LeaderboardService,
+  ) {}
 
   @Get('me')
   @UseGuards(SupabaseAuthGuard)
@@ -22,12 +26,17 @@ export class UsersController {
     return this.usersService.update(user.id, dto);
   }
 
+  @Get('leaderboard')
+  getLeaderboard(@Query('period') period?: string) {
+    return this.leaderboardService.getLeaderboard(
+      period === 'week' ? 'week' : 'all',
+      50,
+    );
+  }
+
   @Get('search')
   @UseGuards(OptionalAuthGuard)
-  search(
-    @Query('q') q: string,
-    @CurrentUser() user: UserEntity | null,
-  ) {
+  search(@Query('q') q: string, @CurrentUser() user: UserEntity | null) {
     if (!q?.trim()) return [];
     return this.usersService.search(q, user?.id ?? null);
   }

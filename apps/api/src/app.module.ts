@@ -17,6 +17,11 @@ import { FollowEntity } from './entities/follow.entity';
 import { LikeEntity } from './entities/like.entity';
 import { CreatorTokenEntity } from './entities/creator-token.entity';
 import { CommentEntity } from './entities/comment.entity';
+import { BookmarkEntity } from './entities/bookmark.entity';
+import { HashtagEntity } from './entities/hashtag.entity';
+import { NotificationEntity } from './entities/notification.entity';
+import { PostViewEntity } from './entities/post-view.entity';
+import { ReportEntity } from './entities/report.entity';
 
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -27,6 +32,10 @@ import { LikesModule } from './likes/likes.module';
 import { UploadModule } from './upload/upload.module';
 import { TokensModule } from './tokens/tokens.module';
 import { CommentsModule } from './comments/comments.module';
+import { BookmarksModule } from './bookmarks/bookmarks.module';
+import { HashtagsModule } from './hashtags/hashtags.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -43,7 +52,19 @@ import { CommentsModule } from './comments/comments.module';
         type: 'postgres' as const,
         url: config.get<string>('database.url'),
         ssl: { rejectUnauthorized: false },
-        entities: [UserEntity, PostEntity, FollowEntity, LikeEntity, CreatorTokenEntity, CommentEntity],
+        entities: [
+          UserEntity,
+          PostEntity,
+          FollowEntity,
+          LikeEntity,
+          CreatorTokenEntity,
+          CommentEntity,
+          BookmarkEntity,
+          HashtagEntity,
+          NotificationEntity,
+          PostViewEntity,
+          ReportEntity,
+        ],
         migrations: [join(__dirname, 'database', 'migrations', '*{.ts,.js}')],
         migrationsRun: true,
         synchronize: false,
@@ -68,6 +89,10 @@ import { CommentsModule } from './comments/comments.module';
     UploadModule,
     TokensModule,
     CommentsModule,
+    BookmarksModule,
+    HashtagsModule,
+    NotificationsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -37,6 +37,15 @@ export class PostEntity {
   @Column({ name: 'comment_count', type: 'int', default: 0 })
   commentCount: number;
 
+  @Column({ name: 'view_count', type: 'int', default: 0 })
+  viewCount: number;
+
+  @Column({ name: 'is_token_gated', default: false })
+  isTokenGated: boolean;
+
+  @Column({ name: 'required_token_address', type: 'varchar', length: 42, nullable: true })
+  requiredTokenAddress: string | null;
+
   @Index()
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

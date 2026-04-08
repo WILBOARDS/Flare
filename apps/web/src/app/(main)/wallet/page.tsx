@@ -1,9 +1,58 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Coins, RefreshCw, ExternalLink } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAuth } from '@/providers/auth-provider';
 import { useFLCBalance } from '@/hooks/use-flc-balance';
+import { useMintToken } from '@/hooks/use-mint-token';
+
+function MintTokenCard() {
+  const [name, setName] = useState('');
+  const [symbol, setSymbol] = useState('');
+  const { mutate: mint, isPending } = useMintToken();
+
+  const handleMint = () => {
+    if (!name.trim() || !symbol.trim()) return;
+    mint(
+      { name: name.trim(), symbol: symbol.trim().toUpperCase() },
+      {
+        onSuccess: () => toast.success('Creator token launched!'),
+        onError: () => toast.error('Failed to launch token'),
+      },
+    );
+  };
+
+  return (
+    <div className="card p-5">
+      <h3 className="font-bold text-white mb-1">Launch Creator Token</h3>
+      <p className="text-xs text-neutral-500 mb-4">Deploy your own ERC-20 token on Polygon Amoy</p>
+      <div className="space-y-3">
+        <input
+          className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors"
+          placeholder="Token name (e.g. My Creator Token)"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors"
+          placeholder="Symbol (e.g. MCT)"
+          value={symbol}
+          onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+          maxLength={10}
+        />
+        <button
+          onClick={handleMint}
+          disabled={isPending || !name.trim() || !symbol.trim()}
+          className="w-full bg-brand hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors"
+        >
+          {isPending ? 'Launching...' : 'Launch Token'}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function truncateAddress(address: string) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -97,6 +146,24 @@ export default function WalletPage() {
               </div>
             )}
           </div>
+
+          {/* Creator Token */}
+          {user.creatorTokenAddress ? (
+            <div className="card p-4">
+              <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Your Creator Token</p>
+              <p className="font-mono text-sm text-white truncate">{user.creatorTokenAddress}</p>
+              <a
+                href={`https://amoy.polygonscan.com/token/${user.creatorTokenAddress}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-brand hover:text-orange-400 transition-colors mt-2"
+              >
+                View on PolygonScan <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          ) : (
+            <MintTokenCard />
+          )}
 
           {/* Info note */}
           <div className="card p-4 border-neutral-800">

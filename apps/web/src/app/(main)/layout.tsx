@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/auth-provider';
 import { BottomNav } from '@/components/layout/bottom-nav';
+import { Sidebar } from '@/components/layout/sidebar';
+import { RightSidebar } from '@/components/layout/right-sidebar';
 import { ErrorBoundary } from '@/components/error-boundary';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -25,11 +27,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] pb-20">
-      <main className="page-container pt-4">
+    <div className="min-h-screen bg-[#0A0A0A]">
+      <Sidebar />
+      <main className="page-container pt-4 pb-20 md:pb-6 md:ml-64 lg:mr-80">
         <ErrorBoundary>{children}</ErrorBoundary>
       </main>
-      <BottomNav />
+      <RightSidebar />
+      <BottomNav className="md:hidden" />
     </div>
   );
 }

@@ -8,7 +8,11 @@ export interface Post {
   imageUrl: string | null;
   likeCount: number;
   commentCount: number;
+  viewCount?: number;
   isLiked: boolean;
+  isBookmarked: boolean;
+  isTokenGated?: boolean;
+  hasAccess?: boolean;
   createdAt: string;
   author: {
     id: string;
@@ -18,7 +22,7 @@ export interface Post {
   };
 }
 
-interface FeedPage {
+export interface FeedPage {
   posts: Post[];
   nextCursor?: string;
   hasMore: boolean;
@@ -43,6 +47,33 @@ export function useUserFeed(username: string) {
     queryFn: async ({ pageParam }) => {
       const params = pageParam ? { cursor: pageParam } : {};
       const res = await apiClient.get(`/feed/user/${username}`, { params });
+      return res.data as FeedPage;
+    },
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
+    enabled: !!username,
+  });
+}
+
+export function useTrendingFeed() {
+  return useInfiniteQuery<FeedPage>({
+    queryKey: ['feed', 'trending'],
+    queryFn: async ({ pageParam }) => {
+      const params = pageParam ? { cursor: pageParam } : {};
+      const res = await apiClient.get('/feed/trending', { params });
+      return res.data as FeedPage;
+    },
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
+  });
+}
+
+export function useUserLikedFeed(username: string) {
+  return useInfiniteQuery<FeedPage>({
+    queryKey: ['feed', 'user', username, 'liked'],
+    queryFn: async ({ pageParam }) => {
+      const params = pageParam ? { cursor: pageParam } : {};
+      const res = await apiClient.get(`/feed/user/${username}/liked`, { params });
       return res.data as FeedPage;
     },
     initialPageParam: undefined,

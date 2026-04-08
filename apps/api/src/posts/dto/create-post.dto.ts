@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, MaxLength, IsOptional, IsUrl } from 'class-validator';
+import { IsBoolean, IsString, IsNotEmpty, MaxLength, IsOptional, IsUrl, Length } from 'class-validator';
 
 export class CreatePostDto {
   @IsString()
@@ -13,4 +13,13 @@ export class CreatePostDto {
   @IsOptional()
   @IsString()
   imagePublicId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isTokenGated?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @Length(42, 42)
+  requiredTokenAddress?: string;
 }

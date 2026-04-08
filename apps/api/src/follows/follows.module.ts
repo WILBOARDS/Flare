@@ -5,9 +5,14 @@ import { UserEntity } from '../entities/user.entity';
 import { FollowsService } from './follows.service';
 import { FollowsController } from './follows.controller';
 import { UsersModule } from '../users/users.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([FollowEntity, UserEntity]), UsersModule],
+  imports: [
+    TypeOrmModule.forFeature([FollowEntity, UserEntity]),
+    UsersModule,
+    NotificationsModule,
+  ],
   providers: [FollowsService],
   controllers: [FollowsController],
 })

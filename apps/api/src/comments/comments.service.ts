@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CommentEntity } from '../entities/comment.entity';
 import { PostEntity } from '../entities/post.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class CommentsService {
@@ -12,6 +13,7 @@ export class CommentsService {
     private readonly commentRepo: Repository<CommentEntity>,
     @InjectRepository(PostEntity)
     private readonly postRepo: Repository<PostEntity>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(postId: string, authorId: string, dto: CreateCommentDto): Promise<CommentEntity> {
@@ -25,6 +27,13 @@ export class CommentsService {
       `UPDATE posts SET comment_count = comment_count + 1 WHERE id = $1`,
       [postId],
     );
+
+    // Fire notification — don't block
+    if (post.authorId !== authorId) {
+      this.notificationsService
+        .create({ recipientId: post.authorId, actorId: authorId, type: 'comment', postId })
+        .catch(() => {});
+    }
 
     return this.commentRepo.findOne({
       where: { id: saved.id },
