@@ -154,6 +154,37 @@ export class UsersService {
     return users.map((u) => ({ ...u, isFollowing: followingSet.has(u.id) }));
   }
 
+  async saveWallet(
+    id: string,
+    walletAddress: string,
+    encryptedKeystore?: string,
+  ): Promise<UserEntity> {
+    const user = await this.repo.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+
+    user.walletAddress = walletAddress;
+    if (encryptedKeystore !== undefined) {
+      // Load the field (select: false by default) then update it
+      await this.repo
+        .createQueryBuilder()
+        .update(UserEntity)
+        .set({ encryptedKeystore })
+        .where('id = :id', { id })
+        .execute();
+    }
+    return this.repo.save(user);
+  }
+
+  // Returns encrypted keystore for the requesting user only
+  async getKeystore(id: string): Promise<string | null> {
+    const user = await this.repo
+      .createQueryBuilder('u')
+      .select(['u.id', 'u.encryptedKeystore'])
+      .where('u.id = :id', { id })
+      .getOne();
+    return user?.encryptedKeystore ?? null;
+  }
+
   async update(id: string, dto: UpdateUserDto): Promise<UserEntity> {
     const user = await this.repo.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');

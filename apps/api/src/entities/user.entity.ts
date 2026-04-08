@@ -46,6 +46,10 @@ export class UserEntity {
   @Column({ name: 'date_of_birth', type: 'varchar', nullable: true, length: 10 })
   dateOfBirth: string | null;
 
+  // Stored encrypted client-side; never returned in default queries
+  @Column({ name: 'encrypted_keystore', type: 'text', nullable: true, select: false })
+  encryptedKeystore: string | null;
+
   @Column({ name: 'follower_count', type: 'int', default: 0 })
   followerCount: number;
 

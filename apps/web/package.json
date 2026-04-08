@@ -25,6 +25,7 @@
     "class-variance-authority": "^0.7.0",
     "lucide-react": "^0.439.0",
     "react-hot-toast": "^2.4.1",
+    "@scure/bip39": "^1.4.0",
     "@flare/shared": "workspace:*"
   },
   "devDependencies": {

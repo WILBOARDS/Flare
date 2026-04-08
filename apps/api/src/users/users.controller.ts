@@ -1,6 +1,7 @@
-import { Controller, Get, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { SaveWalletDto } from './dto/save-wallet.dto';
 import { SupabaseAuthGuard } from '../auth/guards/supabase-auth.guard';
 import { OptionalAuthGuard } from '../auth/guards/optional-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -20,6 +21,19 @@ export class UsersController {
   @UseGuards(SupabaseAuthGuard)
   updateMe(@CurrentUser() user: UserEntity, @Body() dto: UpdateUserDto) {
     return this.usersService.update(user.id, dto);
+  }
+
+  @Post('me/wallet')
+  @UseGuards(SupabaseAuthGuard)
+  saveWallet(@CurrentUser() user: UserEntity, @Body() dto: SaveWalletDto) {
+    return this.usersService.saveWallet(user.id, dto.walletAddress, dto.encryptedKeystore);
+  }
+
+  @Get('me/keystore')
+  @UseGuards(SupabaseAuthGuard)
+  async getKeystore(@CurrentUser() user: UserEntity) {
+    const encryptedKeystore = await this.usersService.getKeystore(user.id);
+    return { encryptedKeystore };
   }
 
   @Get('search')
