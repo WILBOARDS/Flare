@@ -10,20 +10,26 @@ export function ViewTracker({ postId, children }: { postId: string; children: Re
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !hasTracked.current) {
-          const timer = setTimeout(() => {
+          timer = setTimeout(() => {
             hasTracked.current = true;
             recordView({ postId });
           }, 1000);
-          return () => clearTimeout(timer);
+        } else if (timer !== null) {
+          clearTimeout(timer);
+          timer = null;
         }
       },
       { threshold: 0.5 },
     );
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (timer !== null) clearTimeout(timer);
+    };
   }, [postId, recordView]);
 
   return <div ref={ref}>{children}</div>;

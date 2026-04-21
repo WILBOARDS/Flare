@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PostEntity } from '../entities/post.entity';
 import { LikeEntity } from '../entities/like.entity';
+import { BookmarkEntity } from '../entities/bookmark.entity';
 
 export interface FeedResponse {
   posts: (PostEntity & { isLiked: boolean; isBookmarked: boolean })[];
@@ -17,6 +18,8 @@ export class FeedService {
     private readonly postRepo: Repository<PostEntity>,
     @InjectRepository(LikeEntity)
     private readonly likeRepo: Repository<LikeEntity>,
+    @InjectRepository(BookmarkEntity)
+    private readonly bookmarkRepo: Repository<BookmarkEntity>,
   ) {}
 
   async getFeed(
@@ -39,7 +42,11 @@ export class FeedService {
     const hasMore = posts.length > limit;
     if (hasMore) posts.pop();
 
-    const likedPostIds = await this.getLikedPostIds(currentUserId, posts.map((p) => p.id));
+    const postIds = posts.map((p) => p.id);
+    const [likedPostIds, bookmarkedPostIds] = await Promise.all([
+      this.getLikedPostIds(currentUserId, postIds),
+      this.getBookmarkedPostIds(currentUserId, postIds),
+    ]);
 
     const nextCursor =
       hasMore && posts.length > 0
@@ -47,7 +54,7 @@ export class FeedService {
         : undefined;
 
     return {
-      posts: posts.map((p) => ({ ...p, isLiked: likedPostIds.has(p.id), isBookmarked: false })),
+      posts: posts.map((p) => ({ ...p, isLiked: likedPostIds.has(p.id), isBookmarked: bookmarkedPostIds.has(p.id) })),
       nextCursor,
       hasMore,
     };
@@ -75,7 +82,11 @@ export class FeedService {
     const hasMore = posts.length > limit;
     if (hasMore) posts.pop();
 
-    const likedPostIds = await this.getLikedPostIds(currentUserId, posts.map((p) => p.id));
+    const postIds = posts.map((p) => p.id);
+    const [likedPostIds, bookmarkedPostIds] = await Promise.all([
+      this.getLikedPostIds(currentUserId, postIds),
+      this.getBookmarkedPostIds(currentUserId, postIds),
+    ]);
 
     const nextCursor =
       hasMore && posts.length > 0
@@ -83,7 +94,7 @@ export class FeedService {
         : undefined;
 
     return {
-      posts: posts.map((p) => ({ ...p, isLiked: likedPostIds.has(p.id), isBookmarked: false })),
+      posts: posts.map((p) => ({ ...p, isLiked: likedPostIds.has(p.id), isBookmarked: bookmarkedPostIds.has(p.id) })),
       nextCursor,
       hasMore,
     };
@@ -114,7 +125,11 @@ export class FeedService {
     if (hasMore) likes.pop();
 
     const posts = likes.map((l) => l.post);
-    const likedPostIds = await this.getLikedPostIds(currentUserId, posts.map((p) => p.id));
+    const postIds = posts.map((p) => p.id);
+    const [likedPostIds, bookmarkedPostIds] = await Promise.all([
+      this.getLikedPostIds(currentUserId, postIds),
+      this.getBookmarkedPostIds(currentUserId, postIds),
+    ]);
 
     const nextCursor =
       hasMore && likes.length > 0
@@ -122,7 +137,7 @@ export class FeedService {
         : undefined;
 
     return {
-      posts: posts.map((p) => ({ ...p, isLiked: likedPostIds.has(p.id), isBookmarked: false })),
+      posts: posts.map((p) => ({ ...p, isLiked: likedPostIds.has(p.id), isBookmarked: bookmarkedPostIds.has(p.id) })),
       nextCursor,
       hasMore,
     };
@@ -139,5 +154,18 @@ export class FeedService {
       .andWhere('like.postId IN (:...postIds)', { postIds })
       .getMany();
     return new Set(likes.map((l) => l.postId));
+  }
+
+  private async getBookmarkedPostIds(
+    userId: string | null,
+    postIds: string[],
+  ): Promise<Set<string>> {
+    if (!userId || postIds.length === 0) return new Set();
+    const bookmarks = await this.bookmarkRepo
+      .createQueryBuilder('bookmark')
+      .where('bookmark.userId = :userId', { userId })
+      .andWhere('bookmark.postId IN (:...postIds)', { postIds })
+      .getMany();
+    return new Set(bookmarks.map((b) => b.postId));
   }
 }

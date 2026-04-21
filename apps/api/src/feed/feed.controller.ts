@@ -33,7 +33,15 @@ export class FeedController {
     @Query('cursor') cursor?: string,
     @Query('limit') limit?: string,
   ) {
-    const offset = cursor ? parseInt(Buffer.from(cursor, 'base64url').toString()) : 0;
+    let offset = 0;
+    if (cursor) {
+      try {
+        const parsed = parseInt(Buffer.from(cursor, 'base64url').toString(), 10);
+        if (!isNaN(parsed) && parsed >= 0) offset = parsed;
+      } catch {
+        // invalid cursor — default to 0
+      }
+    }
     return this.trendingService.getTrending(
       user?.id,
       limit ? parseInt(limit, 10) : 20,

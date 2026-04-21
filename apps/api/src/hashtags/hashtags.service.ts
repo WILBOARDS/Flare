@@ -56,9 +56,11 @@ export class HashtagsService {
     tag: string,
     cursor?: string,
     limit = 20,
+    currentUserId?: string,
   ): Promise<HashtagFeedResponse> {
     const normalizedTag = tag.toLowerCase();
-    const params: any[] = [normalizedTag, limit + 1];
+    // $1 = tag, $2 = limit+1, $3 = currentUserId (NULL when unauthenticated)
+    const params: any[] = [normalizedTag, limit + 1, currentUserId ?? null];
 
     let cursorClause = '';
     if (cursor) {
@@ -70,9 +72,14 @@ export class HashtagsService {
     const rows = await this.dataSource.query(
       `SELECT p.id, p.author_id AS "authorId", p.content, p.image_url AS "imageUrl",
               p.like_count AS "likeCount", p.comment_count AS "commentCount",
+              p.view_count AS "viewCount",
+              p.is_token_gated AS "isTokenGated",
+              p.required_token_address AS "requiredTokenAddress",
               p.created_at AS "createdAt", p.updated_at AS "updatedAt",
               u.id AS "author_id", u.username AS "author_username",
-              u.display_name AS "author_displayName", u.avatar_url AS "author_avatarUrl"
+              u.display_name AS "author_displayName", u.avatar_url AS "author_avatarUrl",
+              COALESCE((SELECT TRUE FROM likes l WHERE l.post_id = p.id AND l.user_id = $3), FALSE) AS "isLiked",
+              COALESCE((SELECT TRUE FROM bookmarks b WHERE b.post_id = p.id AND b.user_id = $3), FALSE) AS "isBookmarked"
        FROM post_hashtags ph
        JOIN hashtags h ON h.id = ph.hashtag_id
        JOIN posts p ON p.id = ph.post_id
@@ -93,9 +100,13 @@ export class HashtagsService {
       imageUrl: r.imageUrl,
       likeCount: r.likeCount,
       commentCount: r.commentCount,
+      viewCount: r.viewCount,
+      isTokenGated: r.isTokenGated,
+      requiredTokenAddress: r.requiredTokenAddress,
       createdAt: r.createdAt,
       updatedAt: r.updatedAt,
-      isLiked: false,
+      isLiked: r.isLiked,
+      isBookmarked: r.isBookmarked,
       author: {
         id: r.author_id,
         username: r.author_username,
@@ -112,9 +123,10 @@ export class HashtagsService {
     return { posts, nextCursor, hasMore };
   }
 
-  async searchTags(q: string, limit = 10): Promise<string[]> {
+  async searchTags(q: string, limit = 10): Promise<{ tag: string; postCount: number }[]> {
     const rows = await this.dataSource.query(
-      `SELECT h.tag FROM hashtags h
+      `SELECT h.tag, COUNT(*)::int AS "postCount"
+       FROM hashtags h
        JOIN post_hashtags ph ON ph.hashtag_id = h.id
        WHERE h.tag ILIKE $1
        GROUP BY h.tag
@@ -122,6 +134,6 @@ export class HashtagsService {
        LIMIT $2`,
       [`${q.toLowerCase()}%`, limit],
     );
-    return rows.map((r: any) => r.tag);
+    return rows;
   }
 }

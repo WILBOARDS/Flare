@@ -41,7 +41,7 @@ export function useBookmark() {
   });
 }
 
-export function useSavedFeed() {
+export function useSavedFeed(options?: { enabled?: boolean }) {
   return useInfiniteQuery<FeedPage>({
     queryKey: ['saved-feed'],
     queryFn: async ({ pageParam }) => {
@@ -51,5 +51,6 @@ export function useSavedFeed() {
     },
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
+    enabled: options?.enabled ?? true,
   });
 }

@@ -28,10 +28,10 @@ export class LeaderboardService {
               SELECT SUM(p.comment_count) FROM posts p
               WHERE p.author_id = u.id ${periodFilter}
             ), 0)
-        )::int AS "engagementScore"
+        )::int AS "score"
       FROM users u
       WHERE u.username IS NOT NULL
-      ORDER BY "engagementScore" DESC
+      ORDER BY "score" DESC
       LIMIT $1
       `,
       [limit],

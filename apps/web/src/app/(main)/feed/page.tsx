@@ -12,8 +12,8 @@ export default function FeedPage() {
   const [tab, setTab] = useState<Tab>('foryou');
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  const forYou = useFeed();
-  const trending = useTrendingFeed();
+  const forYou = useFeed({ enabled: tab === 'foryou' });
+  const trending = useTrendingFeed({ enabled: tab === 'trending' });
 
   const active = tab === 'foryou' ? forYou : trending;
   const { fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = active;

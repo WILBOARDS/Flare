@@ -13,6 +13,6 @@ export function usePostSearch(query: string) {
     },
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
-    enabled: query.trim().length > 0,
+    enabled: query.trim().length >= 2,
   });
 }

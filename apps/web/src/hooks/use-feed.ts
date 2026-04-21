@@ -28,7 +28,7 @@ export interface FeedPage {
   hasMore: boolean;
 }
 
-export function useFeed() {
+export function useFeed(options?: { enabled?: boolean }) {
   return useInfiniteQuery<FeedPage>({
     queryKey: ['feed'],
     queryFn: async ({ pageParam }) => {
@@ -38,6 +38,7 @@ export function useFeed() {
     },
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -55,7 +56,7 @@ export function useUserFeed(username: string) {
   });
 }
 
-export function useTrendingFeed() {
+export function useTrendingFeed(options?: { enabled?: boolean }) {
   return useInfiniteQuery<FeedPage>({
     queryKey: ['feed', 'trending'],
     queryFn: async ({ pageParam }) => {
@@ -65,10 +66,11 @@ export function useTrendingFeed() {
     },
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
+    enabled: options?.enabled ?? true,
   });
 }
 
-export function useUserLikedFeed(username: string) {
+export function useUserLikedFeed(username: string, options?: { enabled?: boolean }) {
   return useInfiniteQuery<FeedPage>({
     queryKey: ['feed', 'user', username, 'liked'],
     queryFn: async ({ pageParam }) => {
@@ -78,6 +80,6 @@ export function useUserLikedFeed(username: string) {
     },
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
-    enabled: !!username,
+    enabled: !!username && (options?.enabled ?? true),
   });
 }

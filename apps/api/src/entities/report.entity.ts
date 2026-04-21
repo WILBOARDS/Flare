@@ -5,13 +5,13 @@ export class ReportEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'reporter_id' })
+  @Column({ name: 'reporter_id', type: 'uuid' })
   reporterId: string;
 
-  @Column({ name: 'post_id', nullable: true })
+  @Column({ name: 'post_id', type: 'uuid', nullable: true })
   postId: string | null;
 
-  @Column({ name: 'reported_user_id', nullable: true })
+  @Column({ name: 'reported_user_id', type: 'uuid', nullable: true })
   reportedUserId: string | null;
 
   @Column({ type: 'varchar', length: 50 })

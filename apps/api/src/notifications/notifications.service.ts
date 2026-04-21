@@ -31,7 +31,8 @@ export class NotificationsService {
   async findForUser(userId: string, cursor?: string, limit = 20) {
     const qb = this.repo
       .createQueryBuilder('n')
-      .leftJoinAndSelect('n.actor', 'actor')
+      .leftJoin('n.actor', 'actor')
+      .addSelect(['actor.id', 'actor.username', 'actor.displayName', 'actor.avatarUrl'])
       .where('n.recipientId = :userId', { userId })
       .orderBy('n.createdAt', 'DESC')
       .take(limit + 1);

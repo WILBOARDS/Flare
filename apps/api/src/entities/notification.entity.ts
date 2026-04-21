@@ -14,16 +14,16 @@ export class NotificationEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'recipient_id' })
+  @Column({ name: 'recipient_id', type: 'uuid' })
   recipientId: string;
 
-  @Column({ name: 'actor_id' })
+  @Column({ name: 'actor_id', type: 'uuid' })
   actorId: string;
 
   @Column({ type: 'varchar', length: 30 })
   type: 'like' | 'comment' | 'follow';
 
-  @Column({ name: 'post_id', nullable: true })
+  @Column({ name: 'post_id', type: 'uuid', nullable: true })
   postId: string | null;
 
   @Column({ default: false })

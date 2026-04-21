@@ -28,6 +28,7 @@ interface AuthContextValue {
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
+  resendVerificationEmail: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -99,12 +100,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithEmail = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
+    // Await token exchange so caller can redirect immediately after this resolves
+    if (data.session?.access_token) {
+      await exchangeSupabaseToken(data.session.access_token);
+    }
   };
 
   const signUpWithEmail = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (error) throw error;
+  };
+
+  const resendVerificationEmail = async (email: string) => {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
     if (error) throw error;
   };
 
@@ -117,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, supabaseUser, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut, refreshUser }}
+      value={{ user, supabaseUser, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, resendVerificationEmail, signOut, refreshUser }}
     >
       {children}
     </AuthContext.Provider>

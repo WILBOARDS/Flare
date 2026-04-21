@@ -57,7 +57,7 @@ export class PostsController {
   @HttpCode(204)
   @UseGuards(SupabaseAuthGuard)
   async recordView(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<void> {
     await this.viewsService.recordView(id, user.id);

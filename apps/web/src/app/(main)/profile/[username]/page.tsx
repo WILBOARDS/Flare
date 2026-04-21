@@ -32,8 +32,8 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'posts' | 'liked' | 'saved'>('posts');
   const isOwnProfile = user?.id === profile?.id;
 
-  const { data: likedData, isLoading: likedLoading } = useUserLikedFeed(username);
-  const { data: savedData, isLoading: savedLoading } = useSavedFeed();
+  const { data: likedData, isLoading: likedLoading } = useUserLikedFeed(username, { enabled: activeTab === 'liked' });
+  const { data: savedData, isLoading: savedLoading } = useSavedFeed({ enabled: activeTab === 'saved' && isOwnProfile });
 
   const posts = data?.pages.flatMap((p) => p.posts) ?? [];
   const likedPosts = likedData?.pages.flatMap((p) => p.posts) ?? [];
