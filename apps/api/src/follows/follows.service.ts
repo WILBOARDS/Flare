@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { FollowEntity } from '../entities/follow.entity';
 import { UserEntity } from '../entities/user.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class FollowsService {
@@ -15,6 +16,7 @@ export class FollowsService {
     @InjectRepository(FollowEntity)
     private readonly followRepo: Repository<FollowEntity>,
     private readonly dataSource: DataSource,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async follow(followerId: string, followingId: string): Promise<void> {
@@ -32,6 +34,11 @@ export class FollowsService {
       await manager.increment(UserEntity, { id: followerId }, 'followingCount', 1);
       await manager.increment(UserEntity, { id: followingId }, 'followerCount', 1);
     });
+
+    // Fire notification after transaction — don't block
+    this.notificationsService
+      .create({ recipientId: followingId, actorId: followerId, type: 'follow' })
+      .catch(() => {});
   }
 
   async unfollow(followerId: string, followingId: string): Promise<void> {

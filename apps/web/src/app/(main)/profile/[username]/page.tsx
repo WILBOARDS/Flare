@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowLeft, UserPlus, UserMinus, Coins, ExternalLink, Rocket } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useProfile, useFollow } from '@/hooks/use-profile';
-import { useUserFeed } from '@/hooks/use-feed';
+import { useUserFeed, useUserLikedFeed } from '@/hooks/use-feed';
+import { useSavedFeed } from '@/hooks/use-bookmark';
 import { useAuth } from '@/providers/auth-provider';
 import { PostCard } from '@/components/feed/post-card';
 import { PostSkeleton } from '@/components/feed/post-skeleton';
@@ -28,8 +29,15 @@ export default function ProfilePage() {
     isLoading: feedLoading,
   } = useUserFeed(username);
 
+  const [activeTab, setActiveTab] = useState<'posts' | 'liked' | 'saved'>('posts');
   const isOwnProfile = user?.id === profile?.id;
+
+  const { data: likedData, isLoading: likedLoading } = useUserLikedFeed(username, { enabled: activeTab === 'liked' });
+  const { data: savedData, isLoading: savedLoading } = useSavedFeed({ enabled: activeTab === 'saved' && isOwnProfile });
+
   const posts = data?.pages.flatMap((p) => p.posts) ?? [];
+  const likedPosts = likedData?.pages.flatMap((p) => p.posts) ?? [];
+  const savedPosts = savedData?.pages.flatMap((p) => p.posts) ?? [];
 
   // Infinite scroll
   useEffect(() => {
@@ -217,19 +225,71 @@ export default function ProfilePage() {
           </div>
         ) : null}
 
-        {/* Posts */}
-        {feedLoading ? (
-          Array.from({ length: 3 }).map((_, i) => <PostSkeleton key={i} />)
-        ) : posts.length === 0 ? (
-          <div className="text-center py-12 text-neutral-500">
-            <p className="text-sm">No posts yet</p>
-          </div>
-        ) : (
-          posts.map((post) => <PostCard key={post.id} post={post} />)
+        {/* Tabs */}
+        <div className="flex border-b border-neutral-800 mb-4">
+          {(['posts', 'liked', 'saved'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setActiveTab(t)}
+              className={`flex-1 py-3 text-sm font-semibold capitalize transition-colors ${
+                activeTab === t
+                  ? 'text-white border-b-2 border-brand'
+                  : 'text-neutral-500 hover:text-neutral-300'
+              }`}
+            >
+              {t === 'posts' ? 'Posts' : t === 'liked' ? 'Liked' : 'Saved'}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab content */}
+        {activeTab === 'posts' && (
+          <>
+            {feedLoading ? (
+              Array.from({ length: 3 }).map((_, i) => <PostSkeleton key={i} />)
+            ) : posts.length === 0 ? (
+              <div className="text-center py-12 text-neutral-500">
+                <p className="text-sm">No posts yet</p>
+              </div>
+            ) : (
+              posts.map((post) => <PostCard key={post.id} post={post} />)
+            )}
+            <div ref={loaderRef} className="h-10" />
+            {isFetchingNextPage && <PostSkeleton />}
+          </>
         )}
 
-        <div ref={loaderRef} className="h-10" />
-        {isFetchingNextPage && <PostSkeleton />}
+        {activeTab === 'liked' && (
+          <>
+            {likedLoading ? (
+              Array.from({ length: 3 }).map((_, i) => <PostSkeleton key={i} />)
+            ) : likedPosts.length === 0 ? (
+              <div className="text-center py-12 text-neutral-500">
+                <p className="text-sm">No liked posts yet</p>
+              </div>
+            ) : (
+              likedPosts.map((post) => <PostCard key={post.id} post={post} />)
+            )}
+          </>
+        )}
+
+        {activeTab === 'saved' && (
+          <>
+            {!isOwnProfile ? (
+              <div className="text-center py-12 text-neutral-500">
+                <p className="text-sm">Saved posts are private</p>
+              </div>
+            ) : savedLoading ? (
+              Array.from({ length: 3 }).map((_, i) => <PostSkeleton key={i} />)
+            ) : savedPosts.length === 0 ? (
+              <div className="text-center py-12 text-neutral-500">
+                <p className="text-sm">No saved posts yet</p>
+              </div>
+            ) : (
+              savedPosts.map((post) => <PostCard key={post.id} post={post} />)
+            )}
+          </>
+        )}
       </motion.div>
     </div>
   );

@@ -1,15 +1,23 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useFeed } from '@/hooks/use-feed';
+import { useState, useEffect, useRef } from 'react';
+import { useFeed, useTrendingFeed } from '@/hooks/use-feed';
 import { PostCard } from '@/components/feed/post-card';
 import { PostSkeleton } from '@/components/feed/post-skeleton';
+import { NotificationBell } from '@/components/layout/notification-bell';
+
+type Tab = 'foryou' | 'trending';
 
 export default function FeedPage() {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useFeed();
+  const [tab, setTab] = useState<Tab>('foryou');
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  // Infinite scroll via IntersectionObserver
+  const forYou = useFeed({ enabled: tab === 'foryou' });
+  const trending = useTrendingFeed({ enabled: tab === 'trending' });
+
+  const active = tab === 'foryou' ? forYou : trending;
+  const { fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = active;
+
   useEffect(() => {
     const el = loaderRef.current;
     if (!el) return;
@@ -25,13 +33,31 @@ export default function FeedPage() {
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  const posts = data?.pages.flatMap((p) => p.posts) ?? [];
+  const posts = active.data?.pages.flatMap((p) => p.posts) ?? [];
 
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-black text-brand">FLAIR</h1>
+        <NotificationBell />
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-neutral-800 mb-4">
+        {(['foryou', 'trending'] as Tab[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`flex-1 py-3 text-sm font-semibold transition-colors ${
+              tab === t
+                ? 'text-white border-b-2 border-brand'
+                : 'text-neutral-500 hover:text-neutral-300'
+            }`}
+          >
+            {t === 'foryou' ? 'For You' : 'Trending'}
+          </button>
+        ))}
       </div>
 
       {/* Feed */}
@@ -46,7 +72,6 @@ export default function FeedPage() {
         posts.map((post) => <PostCard key={post.id} post={post} />)
       )}
 
-      {/* Infinite scroll trigger */}
       <div ref={loaderRef} className="h-10" />
       {isFetchingNextPage && <PostSkeleton />}
     </div>

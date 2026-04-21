@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { Coins, Zap, Users, TrendingUp, Shield, ArrowRight, Twitter, Github, MessageCircle } from 'lucide-react';
+import { usePlatformStats } from '@/hooks/use-platform-stats';
+import { formatCount } from '@/lib/utils';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -30,6 +32,7 @@ function Section({ children, className = '' }: { children: React.ReactNode; clas
 
 export default function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null);
+  const { data: stats } = usePlatformStats();
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
@@ -137,6 +140,33 @@ export default function LandingPage() {
           </div>
         </motion.div>
       </div>
+
+      {/* ── Stats ── */}
+      <Section className="max-w-6xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { label: 'Creators', value: stats?.totalUsers ?? 0 },
+            { label: 'Posts', value: stats?.totalPosts ?? 0 },
+            { label: 'Tokens', value: stats?.totalCreatorTokens ?? 0 },
+          ].map(({ label, value }) => (
+            <motion.div
+              key={label}
+              variants={fadeUp}
+              className="bg-neutral-900 border border-neutral-800 rounded-2xl p-5 text-center"
+            >
+              <p className="text-3xl font-black text-brand">{formatCount(value)}</p>
+              <p className="text-sm text-neutral-500 mt-1">{label}</p>
+            </motion.div>
+          ))}
+        </div>
+        <motion.div variants={fadeUp} className="flex items-center justify-center gap-3 mt-6 text-xs text-neutral-600">
+          <span>Powered by <span className="text-purple-400 font-semibold">Polygon</span></span>
+          <span>·</span>
+          <span>Secured by <span className="text-green-400 font-semibold">Supabase</span></span>
+          <span>·</span>
+          <span>Built with <span className="text-blue-400 font-semibold">NestJS</span></span>
+        </motion.div>
+      </Section>
 
       {/* ── Features ── */}
       <Section className="max-w-6xl mx-auto px-6 py-24">

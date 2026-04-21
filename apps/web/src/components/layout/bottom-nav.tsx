@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Search, PlusSquare, User, Wallet } from 'lucide-react';
+import { Home, Search, PlusSquare, User, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/providers/auth-provider';
 
@@ -10,16 +10,16 @@ const navItems = [
   { href: '/feed', icon: Home, label: 'Feed' },
   { href: '/search', icon: Search, label: 'Search' },
   { href: '/create', icon: PlusSquare, label: 'Create' },
+  { href: '/leaderboard', icon: Trophy, label: 'Top' },
   { href: '/profile', icon: User, label: 'Profile' },
-  { href: '/wallet', icon: Wallet, label: 'Wallet' },
 ];
 
-export function BottomNav() {
+export function BottomNav({ className }: { className?: string }) {
   const pathname = usePathname();
   const { user } = useAuth();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[#0A0A0A]/95 backdrop-blur border-t border-neutral-800 z-50">
+    <nav className={cn('fixed bottom-0 left-0 right-0 bg-[#0A0A0A]/95 backdrop-blur border-t border-neutral-800 z-50', className)}>
       <div className="max-w-lg mx-auto flex items-center justify-around px-2 py-2">
         {navItems.map(({ href, icon: Icon, label }) => {
           const resolvedHref = href === '/profile' && user?.username
